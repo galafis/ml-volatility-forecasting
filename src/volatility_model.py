@@ -6,12 +6,11 @@ Author: Gabriel Demetrios Lafis
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-from sklearn.model_selection import train_test_split, TimeSeriesSplit, cross_val_score
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.preprocessing import StandardScaler
 import xgboost as xgb
 import joblib
-from typing import Tuple, Dict, List
+from typing import Tuple, Dict
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -207,7 +206,7 @@ class VolatilityForecaster:
         X = X[self.feature_names]  # Ensure same feature order
         
         # Handle NaN values
-        X = X.fillna(method='ffill').fillna(0)
+        X = X.ffill().fillna(0)
         
         # Scale and predict
         X_scaled = self.scaler.transform(X)
