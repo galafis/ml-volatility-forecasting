@@ -1,254 +1,234 @@
-# 🤖 Ml Volatility Forecasting
+# ML Volatility Forecasting
 
-> Professional Python project implementing Ml Volatility Forecasting
+Previsao de volatilidade em mercados financeiros usando Machine Learning (Random Forest, Gradient Boosting, XGBoost).
 
-[![Python](https://img.shields.io/badge/Python-3.12-3776AB.svg)](https://img.shields.io/badge/)
-[![NumPy](https://img.shields.io/badge/NumPy-1.26-013243.svg)](https://img.shields.io/badge/)
-[![Pandas](https://img.shields.io/badge/Pandas-2.2-150458.svg)](https://img.shields.io/badge/)
-[![scikit--learn](https://img.shields.io/badge/scikit--learn-1.4-F7931E.svg)](https://img.shields.io/badge/)
-[![XGBoost](https://img.shields.io/badge/XGBoost-2.0-FF6600.svg)](https://img.shields.io/badge/)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB.svg)](https://www.python.org/)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-1.5-F7931E.svg)](https://scikit-learn.org/)
+[![XGBoost](https://img.shields.io/badge/XGBoost-2.1-FF6600.svg)](https://xgboost.readthedocs.io/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[English](#english) | [Português](#português)
+[Portugues](#portugues) | [English](#english)
+
+---
+
+## Portugues
+
+### Sobre
+
+Modelo de Machine Learning para previsao de volatilidade realizada em series temporais financeiras. O projeto implementa uma classe `VolatilityForecaster` que:
+
+- Calcula retornos logaritmicos e volatilidade realizada (desvio padrao rolante anualizado)
+- Gera features automaticamente a partir de dados OHLCV: volatilidade historica em janelas multiplas (5, 10, 20, 30 dias), retornos defasados, retornos ao quadrado, momentum de preco, range high-low, features de volume e efeito dia da semana
+- Treina modelos de regressao (Random Forest, Gradient Boosting ou XGBoost) para prever volatilidade futura
+- Faz split temporal dos dados (sem data leakage)
+- Normaliza features com StandardScaler
+- Reporta metricas de treino e teste (MSE, MAE, RMSE, R2)
+- Exporta importancia de features
+- Permite salvar/carregar modelos treinados com joblib
+
+### Como Usar
+
+```bash
+# Clonar o repositorio
+git clone https://github.com/galafis/ml-volatility-forecasting.git
+cd ml-volatility-forecasting
+
+# Criar ambiente virtual
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# Instalar dependencias
+pip install -r requirements.txt
+
+# Executar exemplo com dados sinteticos
+python src/volatility_model.py
+
+# Executar testes
+pytest tests/ -v
+```
+
+### Uso Programatico
+
+```python
+from src.volatility_model import VolatilityForecaster, generate_sample_data
+
+# Gerar dados de exemplo (ou usar seus proprios dados OHLCV)
+df = generate_sample_data(1000)
+
+# Treinar modelo
+forecaster = VolatilityForecaster(model_type='xgboost')  # ou 'rf', 'gb'
+metrics = forecaster.train(df, target_horizon=1, test_size=0.2)
+print(metrics)
+
+# Prever volatilidade
+predictions = forecaster.predict(df.tail(30))
+
+# Ver importancia das features
+importance = forecaster.get_feature_importance()
+
+# Salvar/carregar modelo
+forecaster.save_model('modelo.joblib')
+forecaster.load_model('modelo.joblib')
+```
+
+### Estrutura do Projeto
+
+```
+ml-volatility-forecasting/
+├── src/
+│   └── volatility_model.py   # Classe VolatilityForecaster + gerador de dados
+├── tests/
+│   ├── __init__.py
+│   └── test_main.py          # 17 testes unitarios
+├── requirements.txt
+├── LICENSE
+└── README.md
+```
+
+### Features Geradas
+
+| Feature | Descricao |
+|---------|-----------|
+| `vol_Xd` | Volatilidade realizada em janelas de 5, 10, 20, 30 dias |
+| `return_lag_X` | Retornos defasados (1, 2, 3, 5, 10 dias) |
+| `squared_return` | Retorno ao quadrado (proxy de volatilidade) |
+| `squared_return_maX` | Media movel do retorno ao quadrado |
+| `momentum_X` | Momentum de preco em periodos de 5, 10, 20 dias |
+| `hl_ratio` | Razao high-low / close (proxy de volatilidade intradiaria) |
+| `volume_change` | Variacao percentual do volume |
+| `volume_ma_ratio` | Razao volume / media movel de 20 dias |
+| `day_of_week` | Dia da semana (efeito calendario) |
+
+### Tecnologias
+
+- **Python 3.12** — linguagem principal
+- **pandas 2.2** — manipulacao de dados e series temporais
+- **NumPy 1.26** — computacao numerica
+- **scikit-learn 1.5** — modelos de ML, metricas e preprocessamento
+- **XGBoost 2.1** — gradient boosting otimizado
+- **joblib 1.4** — serializacao de modelos
+
+### Limitacoes
+
+- O exemplo embutido usa dados sinteticos com clustering de volatilidade estilo GARCH simplificado, nao dados reais de mercado
+- Nao inclui API de servico ou deploy containerizado
+- Nao implementa validacao cruzada temporal (walk-forward)
+- O target (volatilidade realizada com `target_horizon=1`) usa janela curta e pode ser ruidoso
 
 ---
 
 ## English
 
-### 🎯 Overview
+### About
 
-**Ml Volatility Forecasting** is a production-grade Python application that showcases modern software engineering practices including clean architecture, comprehensive testing, containerized deployment, and CI/CD readiness.
+Machine Learning model for realized volatility forecasting in financial time series. The project implements a `VolatilityForecaster` class that:
 
-The codebase comprises **301 lines** of source code organized across **1 modules**, following industry best practices for maintainability, scalability, and code quality.
+- Calculates log returns and realized volatility (annualized rolling standard deviation)
+- Automatically generates features from OHLCV data: historical volatility at multiple windows (5, 10, 20, 30 days), lagged returns, squared returns, price momentum, high-low range, volume features, and day-of-week effect
+- Trains regression models (Random Forest, Gradient Boosting, or XGBoost) to predict future volatility
+- Performs temporal train/test split (no data leakage)
+- Normalizes features with StandardScaler
+- Reports train and test metrics (MSE, MAE, RMSE, R2)
+- Exports feature importance
+- Supports saving/loading trained models with joblib
 
-### ✨ Key Features
-
-- **🤖 ML Pipeline**: End-to-end machine learning workflow from data to deployment
-- **🔬 Feature Engineering**: Automated feature extraction and transformation
-- **📊 Model Evaluation**: Comprehensive metrics and cross-validation
-- **🚀 Model Serving**: Production-ready prediction API
-- **🏗️ Object-Oriented**: 1 core classes with clean architecture
-
-### 🏗️ Architecture
-
-```mermaid
-graph LR
-    subgraph Input["📥 Input"]
-        A[Raw Data]
-        B[Feature Config]
-    end
-    
-    subgraph Pipeline["🔬 ML Pipeline"]
-        C[Preprocessing]
-        D[Feature Engineering]
-        E[Model Training]
-        F[Evaluation]
-    end
-    
-    subgraph Output["📤 Output"]
-        G[Trained Models]
-        H[Metrics & Reports]
-        I[Predictions]
-    end
-    
-    A --> C --> D --> E --> F
-    B --> D
-    F --> G
-    F --> H
-    G --> I
-    
-    style Input fill:#e1f5fe
-    style Pipeline fill:#f3e5f5
-    style Output fill:#e8f5e9
-```
-
-### 🚀 Quick Start
-
-#### Prerequisites
-
-- Python 3.12+
-- pip (Python package manager)
-
-#### Installation
+### Usage
 
 ```bash
 # Clone the repository
 git clone https://github.com/galafis/ml-volatility-forecasting.git
 cd ml-volatility-forecasting
 
-# Create and activate virtual environment
+# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
+
+# Run example with synthetic data
+python src/volatility_model.py
+
+# Run tests
+pytest tests/ -v
 ```
 
-#### Running
+### Programmatic Usage
 
-```bash
-# Run the application
-python src/main.py
+```python
+from src.volatility_model import VolatilityForecaster, generate_sample_data
+
+# Generate sample data (or use your own OHLCV data)
+df = generate_sample_data(1000)
+
+# Train model
+forecaster = VolatilityForecaster(model_type='xgboost')  # or 'rf', 'gb'
+metrics = forecaster.train(df, target_horizon=1, test_size=0.2)
+print(metrics)
+
+# Predict volatility
+predictions = forecaster.predict(df.tail(30))
+
+# View feature importance
+importance = forecaster.get_feature_importance()
+
+# Save/load model
+forecaster.save_model('model.joblib')
+forecaster.load_model('model.joblib')
 ```
 
-### 📁 Project Structure
+### Project Structure
 
 ```
 ml-volatility-forecasting/
-├── src/          # Source code
-│   └── volatility_model.py
-├── tests/         # Test suite
+├── src/
+│   └── volatility_model.py   # VolatilityForecaster class + data generator
+├── tests/
 │   ├── __init__.py
-│   └── test_main.py
+│   └── test_main.py          # 17 unit tests
+├── requirements.txt
 ├── LICENSE
-├── README.md
-└── requirements.txt
+└── README.md
 ```
 
-### 🛠️ Tech Stack
+### Generated Features
 
-| Technology | Description | Role |
-|------------|-------------|------|
-| **Python** | Core Language | Primary |
-| **NumPy** | Numerical computing | Framework |
-| **Pandas** | Data manipulation library | Framework |
-| **scikit-learn** | Machine learning library | Framework |
-| **XGBoost** | Gradient boosting framework | Framework |
+| Feature | Description |
+|---------|-------------|
+| `vol_Xd` | Realized volatility at 5, 10, 20, 30-day windows |
+| `return_lag_X` | Lagged returns (1, 2, 3, 5, 10 days) |
+| `squared_return` | Squared return (volatility proxy) |
+| `squared_return_maX` | Squared return moving average |
+| `momentum_X` | Price momentum at 5, 10, 20-day periods |
+| `hl_ratio` | High-low / close ratio (intraday volatility proxy) |
+| `volume_change` | Volume percent change |
+| `volume_ma_ratio` | Volume / 20-day moving average ratio |
+| `day_of_week` | Day of week (calendar effect) |
 
-### 🤝 Contributing
+### Technologies
 
-Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+- **Python 3.12** — core language
+- **pandas 2.2** — data manipulation and time series
+- **NumPy 1.26** — numerical computing
+- **scikit-learn 1.5** — ML models, metrics, and preprocessing
+- **XGBoost 2.1** — optimized gradient boosting
+- **joblib 1.4** — model serialization
 
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+### Limitations
 
-### 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-### 👤 Author
-
-**Gabriel Demetrios Lafis**
-- GitHub: [@galafis](https://github.com/galafis)
-- LinkedIn: [Gabriel Demetrios Lafis](https://linkedin.com/in/gabriel-demetrios-lafis)
+- The built-in example uses synthetic data with simplified GARCH-like volatility clustering, not real market data
+- Does not include a serving API or containerized deployment
+- Does not implement temporal cross-validation (walk-forward)
+- The target (realized volatility with `target_horizon=1`) uses a short window and can be noisy
 
 ---
 
-## Português
-
-### 🎯 Visão Geral
-
-**Ml Volatility Forecasting** é uma aplicação Python de nível profissional que demonstra práticas modernas de engenharia de software, incluindo arquitetura limpa, testes abrangentes, implantação containerizada e prontidão para CI/CD.
-
-A base de código compreende **301 linhas** de código-fonte organizadas em **1 módulos**, seguindo as melhores práticas do setor para manutenibilidade, escalabilidade e qualidade de código.
-
-### ✨ Funcionalidades Principais
-
-- **🤖 ML Pipeline**: End-to-end machine learning workflow from data to deployment
-- **🔬 Feature Engineering**: Automated feature extraction and transformation
-- **📊 Model Evaluation**: Comprehensive metrics and cross-validation
-- **🚀 Model Serving**: Production-ready prediction API
-- **🏗️ Object-Oriented**: 1 core classes with clean architecture
-
-### 🏗️ Arquitetura
-
-```mermaid
-graph LR
-    subgraph Input["📥 Input"]
-        A[Raw Data]
-        B[Feature Config]
-    end
-    
-    subgraph Pipeline["🔬 ML Pipeline"]
-        C[Preprocessing]
-        D[Feature Engineering]
-        E[Model Training]
-        F[Evaluation]
-    end
-    
-    subgraph Output["📤 Output"]
-        G[Trained Models]
-        H[Metrics & Reports]
-        I[Predictions]
-    end
-    
-    A --> C --> D --> E --> F
-    B --> D
-    F --> G
-    F --> H
-    G --> I
-    
-    style Input fill:#e1f5fe
-    style Pipeline fill:#f3e5f5
-    style Output fill:#e8f5e9
-```
-
-### 🚀 Início Rápido
-
-#### Prerequisites
-
-- Python 3.12+
-- pip (Python package manager)
-
-#### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/galafis/ml-volatility-forecasting.git
-cd ml-volatility-forecasting
-
-# Create and activate virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-#### Running
-
-```bash
-# Run the application
-python src/main.py
-```
-
-### 📁 Estrutura do Projeto
-
-```
-ml-volatility-forecasting/
-├── src/          # Source code
-│   └── volatility_model.py
-├── tests/         # Test suite
-│   ├── __init__.py
-│   └── test_main.py
-├── LICENSE
-├── README.md
-└── requirements.txt
-```
-
-### 🛠️ Stack Tecnológica
-
-| Tecnologia | Descrição | Papel |
-|------------|-----------|-------|
-| **Python** | Core Language | Primary |
-| **NumPy** | Numerical computing | Framework |
-| **Pandas** | Data manipulation library | Framework |
-| **scikit-learn** | Machine learning library | Framework |
-| **XGBoost** | Gradient boosting framework | Framework |
-
-### 🤝 Contribuindo
-
-Contribuições são bem-vindas! Sinta-se à vontade para enviar um Pull Request.
-
-### 📄 Licença
-
-Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
-
-### 👤 Autor
+## Autor / Author
 
 **Gabriel Demetrios Lafis**
 - GitHub: [@galafis](https://github.com/galafis)
 - LinkedIn: [Gabriel Demetrios Lafis](https://linkedin.com/in/gabriel-demetrios-lafis)
+
+## Licenca / License
+
+MIT License - veja [LICENSE](LICENSE) para detalhes / see [LICENSE](LICENSE) for details.
