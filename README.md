@@ -71,6 +71,20 @@ forecaster.save_model('modelo.joblib')
 forecaster.load_model('modelo.joblib')
 ```
 
+### Arquitetura
+
+```mermaid
+graph TD
+    A["Dados OHLCV"] --> B["volatility_model.py<br/>VolatilityForecaster"]
+    B --> C["Feature Engineering<br/>Janelas de Volatilidade, Lags, Momentum"]
+    C --> D["StandardScaler<br/>Normalizacao"]
+    D --> E["Split Temporal Treino/Teste"]
+    E --> F["Treinamento<br/>RF / GradientBoosting / XGBoost"]
+    F --> G["Metricas: MSE, MAE, RMSE, R2"]
+    F --> H["Importancia de Features"]
+    F --> I["Salvar/Carregar Modelo (joblib)"]
+```
+
 ### Estrutura do Projeto
 
 ```
@@ -175,6 +189,20 @@ importance = forecaster.get_feature_importance()
 # Save/load model
 forecaster.save_model('model.joblib')
 forecaster.load_model('model.joblib')
+```
+
+### Architecture
+
+```mermaid
+graph TD
+    A["OHLCV Input Data"] --> B["volatility_model.py<br/>VolatilityForecaster"]
+    B --> C["Feature Engineering<br/>Volatility Windows, Lags, Momentum"]
+    C --> D["StandardScaler<br/>Normalization"]
+    D --> E["Temporal Train/Test Split"]
+    E --> F["Model Training<br/>RF / GradientBoosting / XGBoost"]
+    F --> G["Metrics: MSE, MAE, RMSE, R2"]
+    F --> H["Feature Importance"]
+    F --> I["Model Save/Load (joblib)"]
 ```
 
 ### Project Structure
